@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # CouchDB database for LiveSync storage
+  couchdb:
+    image: couchdb:3.3
+    container_name: obsidian-livesync-db
+    user: "5984:5984"
+    environment:
+      - COUCHDB_USER=${COUCHDB_USER:-admin}
+      - COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}
+      - COUCHDB_SECRET=${COUCHDB_SECRET:-your-secret-key}
+    volumes:
+      - couchdb_data:/opt/couchdb/data
+      - couchdb_config:/opt/couchdb/etc/local.d
+      - ./couchdb-init.sh:/docker-entrypoint-initdb.d/couchdb-init.sh:ro
+    ports:
+      - "5984:5984"
+    restart: unless-stopped
+    networks:
+      - livesync
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # LiveSync plugin server (optional - for serving plugin files)
+  livesync-plugin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      platforms:
+        - linux/arm64
+    container_name: obsidian-livesync-plugin
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    networks:
+      - livesync
+    depends_on:
+      couchdb:
+        condition: service_healthy
+
+  # Reverse proxy with SSL termination
+  nginx:
+    image: nginx:alpine
+    container_name: obsidian-livesync-proxy
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    networks:
+      - livesync
+    depends_on:
+      - couchdb
+      - livesync-plugin
+  certbot:
+    build:
+      context: ./certbot
+    container_name: linuxserver-certbot
+    restart: unless-stopped
+    env_file:
+      - ./certbot/.env
+    volumes:
+      - ./swag/config/etc/letsencrypt:/etc/letsencrypt
+      - ./swag/config/dns-conf/cloudflare.ini:/etc/cloudflare/cloudflare.ini
+      - ./certbot/www:/var/www/certbot
+volumes:
+  couchdb_data:
+    driver: local
+  couchdb_config:
+    driver: local
+
+networks:
+  livesync:
+    driver: bridge
