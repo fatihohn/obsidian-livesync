@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # CouchDB database for LiveSync storage
   couchdb:
