@@ -47,9 +47,8 @@ chmod +x couchdb-init.sh
 echo "✅ Scripts made executable"
 
 # Create necessary directories
-mkdir -p swag/config/etc/letsencrypt
+mkdir -p letsencrypt
 mkdir -p certbot/www
-mkdir -p ssl
 
 echo "✅ Directories created"
 
@@ -66,7 +65,7 @@ if [ "${SSL_ENABLED}" = "true" ]; then
     sleep 30
     
     # Check if certificates were generated
-    if [ -f "swag/config/etc/letsencrypt/live/${DOMAIN}/fullchain.pem" ]; then
+    if [ -f "letsencrypt/live/crenology.com/fullchain.pem" ]; then
         echo "✅ SSL certificates generated successfully"
         # Now start nginx
         docker compose up -d nginx

@@ -8,6 +8,10 @@ COPY package*.json ./
 COPY tsconfig.json ./
 COPY esbuild.config.mjs ./
 COPY .prettierrc ./
+COPY terser.config.mjs ./
+COPY manifest.json ./
+COPY updates.md ./
+COPY styles.css ./
 
 # Install dependencies
 RUN npm ci
