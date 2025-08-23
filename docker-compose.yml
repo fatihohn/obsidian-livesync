@@ -47,7 +47,8 @@ services:
     container_name: obsidian-livesync-proxy
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
+      - ./letsencrypt:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
     ports:
       - "80:80"
       - "443:443"
@@ -65,8 +66,8 @@ services:
     env_file:
       - ./certbot/.env
     volumes:
-      - ./swag/config/etc/letsencrypt:/etc/letsencrypt
-      - ./swag/config/dns-conf/cloudflare.ini:/etc/cloudflare/cloudflare.ini
+      - ./letsencrypt:/etc/letsencrypt
+      - ./certbot/cloudflare.ini:/etc/cloudflare/cloudflare.ini
       - ./certbot/www:/var/www/certbot
 volumes:
   couchdb_data:
