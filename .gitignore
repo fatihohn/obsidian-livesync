@@ -21,3 +21,4 @@ data.json
 # docker
 .env
 cloudflare.ini
+letsencrypt/*

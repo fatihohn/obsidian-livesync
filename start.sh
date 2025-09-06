@@ -95,10 +95,11 @@ echo "📋 View logs with:"
 echo "   docker compose logs -f"
 echo ""
 echo "🌐 Access points:"
-echo "   CouchDB: http://${DOMAIN}:5984"
 if [ "${SSL_ENABLED}" = "true" ]; then
+    echo "   CouchDB: https://${DOMAIN} (Fauxton: https://${DOMAIN}/_utils)"
     echo "   LiveSync: https://${DOMAIN}"
 else
+    echo "   CouchDB: http://${DOMAIN} (Fauxton: http://${DOMAIN}/_utils)"
     echo "   LiveSync: http://${DOMAIN}"
 fi
 echo "   Plugin server: http://${DOMAIN}:8080"

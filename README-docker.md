@@ -35,16 +35,16 @@ This Docker Compose setup allows you to self-host Obsidian LiveSync on an ARM64 
    # Check if services are running
    docker compose ps
    
-   # Check CouchDB
-   curl http://localhost:5984
+   # Check through reverse proxy (replace with your domain)
+   curl -I https://your-domain.com/_up
    
-   # Check with credentials
-   curl http://your-username:your-password@localhost:5984/_all_dbs
+   # Or check from inside the couchdb container (internal)
+   docker compose exec couchdb curl -s http://localhost:5984/_all_dbs
    ```
 
 ## Services
 
-- **CouchDB**: Database backend (port 5984)
+- **CouchDB**: Database backend (internal port 5984, not public)
 - **Nginx**: Reverse proxy with CORS support (ports 80/443)
 - **LiveSync Plugin**: Optional plugin file server (port 8080)
 
@@ -54,7 +54,8 @@ This Docker Compose setup allows you to self-host Obsidian LiveSync on an ARM64 
 Open these ports in your Oracle Cloud security list:
 - Port 80 (HTTP)
 - Port 443 (HTTPS)
-- Port 5984 (CouchDB) - Optional, if direct access needed
+
+Do not expose CouchDB (5984) publicly; access via the reverse proxy only.
 
 ### 2. Domain Setup
 Point your domain to your Oracle Cloud instance IP:
@@ -87,7 +88,7 @@ docker compose restart nginx
 ### Setup URI Generation
 After starting the services, generate a setup URI:
 
-1. Access CouchDB Fauxton interface: `http://your-domain.com/_utils`
+1. Access CouchDB Fauxton interface: `https://your-domain.com/_utils`
 2. Login with your credentials
 3. Create a new database for your vault
 4. Use the setup wizard in Obsidian LiveSync plugin
@@ -144,8 +145,11 @@ docker compose up -d
 # Check CouchDB logs
 docker compose logs couchdb
 
-# Test CouchDB directly
-curl http://your-username:your-password@localhost:5984/_all_dbs
+# Test CouchDB through reverse proxy
+curl -I https://your-domain.com/_up
+
+# Or from inside the container (internal)
+docker compose exec couchdb curl -s http://localhost:5984/_all_dbs
 ```
 
 ### CORS Issues
