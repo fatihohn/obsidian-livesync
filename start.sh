@@ -56,7 +56,7 @@ wait_for_couchdb() {
   echo "⏳ Waiting for CouchDB HTTP endpoint (localhost:5984/_up)..."
   local deadline=$((SECONDS+600)) # wait up to 10 minutes
   while true; do
-    if curl -fsS http://127.0.0.1:5984/_up >/dev/null 2>&1; then
+    if curl -fsS http://$COUCHDB_USER:$COUCHDB_PASSWORD@127.0.0.1:5984/_up >/dev/null 2>&1; then
       echo "✅ CouchDB is responding on /_up"
       return 0
     fi
