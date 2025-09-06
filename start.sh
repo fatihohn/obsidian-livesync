@@ -53,16 +53,15 @@ mkdir -p certbot/www
 echo "✅ Directories created"
 
 wait_for_couchdb() {
-  echo "⏳ Waiting for CouchDB to become healthy..."
+  echo "⏳ Waiting for CouchDB HTTP endpoint..."
   local deadline=$((SECONDS+600)) # wait up to 10 minutes
   while true; do
-    status=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}unknown{{end}}' obsidian-livesync-db 2>/dev/null || echo unknown)
-    if [ "$status" = "healthy" ]; then
-      echo "✅ CouchDB is healthy"
+    if docker compose exec -T couchdb bash -lc 'exec 3<>/dev/tcp/127.0.0.1/5984 && printf "GET /_up HTTP/1.0\r\n\r\n" >&3 && head -n1 <&3 | grep -q "200"'; then
+      echo "✅ CouchDB is responding on /_up"
       return 0
     fi
     if (( SECONDS > deadline )); then
-      echo "❌ Timeout waiting for CouchDB health (last status: $status)"
+      echo "❌ Timeout waiting for CouchDB HTTP endpoint"
       echo "— Recent CouchDB logs —"
       docker compose logs --tail=200 couchdb || true
       return 1
