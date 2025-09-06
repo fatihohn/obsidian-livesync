@@ -37,11 +37,11 @@ curl -X PUT http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@localhost:5984/_node/_loc
      -H "Content-Type: application/json"
 
 curl -X PUT http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@localhost:5984/_node/_local/_config/cors/methods \
-     -d '"GET, PUT, POST, HEAD, DELETE"' \
+     -d '"GET, PUT, POST, HEAD, DELETE, OPTIONS"' \
      -H "Content-Type: application/json"
 
 curl -X PUT http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@localhost:5984/_node/_local/_config/cors/headers \
-     -d '"accept, authorization, content-type, origin, referer"' \
+     -d '"accept, authorization, content-type, origin, referer, if-match, if-none-match, content-length"' \
      -H "Content-Type: application/json"
 
 # Set maximum document size (for large attachments)
