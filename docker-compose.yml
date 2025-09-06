@@ -11,6 +11,8 @@ services:
       - couchdb_data:/opt/couchdb/data
       - couchdb_config:/opt/couchdb/etc/local.d
       - ./couchdb-init.sh:/docker-entrypoint-initdb.d/couchdb-init.sh:ro
+    env_file:
+      - fileName: .env
     restart: unless-stopped
     networks:
       - livesync
