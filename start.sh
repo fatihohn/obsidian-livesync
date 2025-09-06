@@ -53,10 +53,10 @@ mkdir -p certbot/www
 echo "✅ Directories created"
 
 wait_for_couchdb() {
-  echo "⏳ Waiting for CouchDB HTTP endpoint..."
+  echo "⏳ Waiting for CouchDB HTTP endpoint (localhost:5984/_up)..."
   local deadline=$((SECONDS+600)) # wait up to 10 minutes
   while true; do
-    if docker compose exec -T couchdb bash -lc 'exec 3<>/dev/tcp/127.0.0.1/5984 && printf "GET /_up HTTP/1.0\r\n\r\n" >&3 && head -n1 <&3 | grep -q "200"'; then
+    if curl -fsS http://127.0.0.1:5984/_up >/dev/null 2>&1; then
       echo "✅ CouchDB is responding on /_up"
       return 0
     fi
@@ -66,7 +66,7 @@ wait_for_couchdb() {
       docker compose logs --tail=200 couchdb || true
       return 1
     fi
-    sleep 5
+    sleep 3
   done
 }
 
