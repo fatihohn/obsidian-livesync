@@ -7,7 +7,6 @@ services:
       - COUCHDB_USER=${COUCHDB_USER:-admin}
       - COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}
       - COUCHDB_SECRET=${COUCHDB_SECRET:-your-secret-key}
-      - NODENAME=couchdb@127.0.0.1
     volumes:
       - couchdb_data:/opt/couchdb/data
       - couchdb_config:/opt/couchdb/etc/local.d
