@@ -52,25 +52,45 @@ mkdir -p certbot/www
 
 echo "✅ Directories created"
 
+wait_for_couchdb() {
+  echo "⏳ Waiting for CouchDB to become healthy..."
+  local deadline=$((SECONDS+600)) # wait up to 10 minutes
+  while true; do
+    status=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}unknown{{end}}' obsidian-livesync-db 2>/dev/null || echo unknown)
+    if [ "$status" = "healthy" ]; then
+      echo "✅ CouchDB is healthy"
+      return 0
+    fi
+    if (( SECONDS > deadline )); then
+      echo "❌ Timeout waiting for CouchDB health (last status: $status)"
+      echo "— Recent CouchDB logs —"
+      docker compose logs --tail=200 couchdb || true
+      return 1
+    fi
+    sleep 5
+  done
+}
+
 # Start services
 echo "🔧 Starting services..."
 
 if [ "${SSL_ENABLED}" = "true" ]; then
-    echo "🔒 SSL is enabled - starting with certbot for certificate generation"
-    
-    # First, start services without nginx to avoid SSL issues
-    docker compose up -d couchdb livesync-plugin certbot
-    
+    echo "🔒 SSL is enabled - starting certbot and CouchDB first"
+    docker compose up -d couchdb certbot
+    wait_for_couchdb
+    # Start plugin after DB is healthy
+    docker compose up -d livesync-plugin
+
     echo "⏳ Waiting for certificate generation..."
     sleep 30
-    
+
     # Check if certificates were generated
     if [ -f "letsencrypt/live/crenology.com/fullchain.pem" ]; then
         echo "✅ SSL certificates generated successfully"
         # Now start nginx
         docker compose up -d nginx
     else
-        echo "⚠️  SSL certificates not found. Starting in HTTP mode..."
+        echo "⚠️  SSL certificates not found. Starting in HTTP mode for now..."
         # Modify nginx.conf temporarily for HTTP-only mode
         cp nginx.conf nginx.conf.backup
         sed -i 's/return 301 https/# return 301 https/g' nginx.conf
@@ -82,7 +102,10 @@ else
     # Comment out HTTPS redirect in nginx.conf
     cp nginx.conf nginx.conf.backup
     sed -i 's/return 301 https/# return 301 https/g' nginx.conf
-    docker compose up -d
+    # Start DB first, wait, then others
+    docker compose up -d couchdb
+    wait_for_couchdb
+    docker compose up -d livesync-plugin nginx
 fi
 
 echo ""
