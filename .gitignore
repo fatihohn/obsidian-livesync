@@ -22,3 +22,6 @@ data.json
 .env
 cloudflare.ini
 letsencrypt/*
+
+# backup
+backups/*
