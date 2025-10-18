@@ -68,9 +68,27 @@ echo "백업 완료."
 
 # 선택적으로 원격 서버로 백업 파일 전송
 if [ -n "${BACKUP_REMOTE_SERVER:-}" ] && [ -n "${BACKUP_REMOTE_DIR:-}" ]; then
-  echo "원격 서버로 전송 준비: ${BACKUP_REMOTE_SERVER}:${BACKUP_REMOTE_DIR}"
-  ssh "${BACKUP_REMOTE_SERVER}" "mkdir -p '${BACKUP_REMOTE_DIR}'"
-  scp "$BACKUP_FILE" "${BACKUP_REMOTE_SERVER}:${BACKUP_REMOTE_DIR}/"
+  REMOTE_TARGET="${BACKUP_REMOTE_SERVER}"
+  if [ -n "${BACKUP_REMOTE_USER:-}" ]; then
+    REMOTE_TARGET="${BACKUP_REMOTE_USER}@${BACKUP_REMOTE_SERVER}"
+  fi
+  REMOTE_DIR="${BACKUP_REMOTE_DIR%/}"
+  if [ -z "$REMOTE_DIR" ]; then
+    REMOTE_DIR="/"
+  fi
+
+  echo "원격 서버로 전송 준비: ${REMOTE_TARGET}:${REMOTE_DIR}"
+
+  if ! ssh "$REMOTE_TARGET" "mkdir -p \"${REMOTE_DIR}\""; then
+    echo "오류: 원격 디렉터리 생성에 실패했습니다 (${REMOTE_TARGET}:${REMOTE_DIR})" >&2
+    exit 1
+  fi
+
+  if ! scp "$BACKUP_FILE" "${REMOTE_TARGET}:${REMOTE_DIR}/"; then
+    echo "오류: 원격 서버로 백업 파일 전송에 실패했습니다 (${REMOTE_TARGET}:${REMOTE_DIR})" >&2
+    exit 1
+  fi
+
   echo "원격 서버 전송 완료."
 else
   echo "원격 전송 설정이 비어 있어 로컬 백업만 수행했습니다."
