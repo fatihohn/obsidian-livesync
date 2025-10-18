@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Ensure npx and node are found in cron jobs by adding the nvm bin directory to PATH
+export PATH="/home/opc/.nvm/versions/node/v20.10.0/bin:$PATH"
+
 # 스크립트가 위치한 디렉토리의 상위 디렉토리 (프로젝트 루트)
 PROJECT_ROOT=$(dirname "$(realpath "$0")")/..
 
