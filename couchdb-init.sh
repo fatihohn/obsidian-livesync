@@ -23,6 +23,13 @@ curl -X PUT http://localhost:5984/_node/_local/_config/admins/${COUCHDB_USER} \
      -d "\"${COUCHDB_PASSWORD}\"" \
      -H "Content-Type: application/json" || true
 
+# Ensure system databases exist (idempotent PUT requests)
+for db in _users _replicator _global_changes; do
+    echo "Ensuring system database '${db}' exists..."
+    curl -X PUT http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@localhost:5984/${db} \
+         -s -o /dev/null || true
+done
+
 # Enable CORS
 curl -X PUT http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@localhost:5984/_node/_local/_config/httpd/enable_cors \
      -d '"true"' \
