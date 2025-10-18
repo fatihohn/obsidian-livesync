@@ -26,3 +26,6 @@ letsencrypt/*
 # backup
 backups/*
 .env.backup
+
+# MacOS
+.DS_Store
