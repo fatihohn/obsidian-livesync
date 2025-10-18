@@ -65,3 +65,13 @@ echo "백업 시작: $DB_NAME -> $BACKUP_FILE"
 "${COUCHBACKUP_CMD[@]}" --url "$DB_URL" --db "$DB_NAME" | gzip > "$BACKUP_FILE"
 
 echo "백업 완료."
+
+# 선택적으로 원격 서버로 백업 파일 전송
+if [ -n "${BACKUP_REMOTE_SERVER:-}" ] && [ -n "${BACKUP_REMOTE_DIR:-}" ]; then
+  echo "원격 서버로 전송 준비: ${BACKUP_REMOTE_SERVER}:${BACKUP_REMOTE_DIR}"
+  ssh "${BACKUP_REMOTE_SERVER}" "mkdir -p '${BACKUP_REMOTE_DIR}'"
+  scp "$BACKUP_FILE" "${BACKUP_REMOTE_SERVER}:${BACKUP_REMOTE_DIR}/"
+  echo "원격 서버 전송 완료."
+else
+  echo "원격 전송 설정이 비어 있어 로컬 백업만 수행했습니다."
+fi
