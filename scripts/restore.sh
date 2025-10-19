@@ -24,6 +24,29 @@ fi
 : "${COUCHDB_PORT?COUCHDB_PORT 변수를 .env 파일에 설정해주세요.}"
 : "${COUCHDB_DATABASE?COUCHDB_DATABASE 변수를 .env 파일에 설정해주세요.}"
 
+# Node.js 바이너리 경로 보강 (필요 시 NODE_BIN_DIR 환경변수 사용)
+ensure_node() {
+  if command -v node >/dev/null 2>&1; then
+    return 0
+  fi
+  if [ -n "${NODE_BIN_DIR:-}" ] && [ -x "${NODE_BIN_DIR}/node" ]; then
+    export PATH="${NODE_BIN_DIR}:$PATH"
+  elif [ -n "${NVM_DIR:-}" ] && [ -s "${NVM_DIR}/nvm.sh" ]; then
+    # shellcheck disable=SC1090
+    source "${NVM_DIR}/nvm.sh"
+    if command -v nvm >/dev/null 2>&1 && [ -n "${NVM_DEFAULT_VERSION:-}" ]; then
+      nvm use "${NVM_DEFAULT_VERSION}" >/dev/null
+    fi
+  fi
+
+  if ! command -v node >/dev/null 2>&1; then
+    echo "오류: node 명령을 찾을 수 없습니다. NODE_BIN_DIR 혹은 NVM 관련 변수를 설정해주세요."
+    exit 1
+  fi
+}
+
+ensure_node
+
 # --- 설정 ---
 DB_URL="http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@${COUCHDB_HOST}:${COUCHDB_PORT}"
 DB_NAME="${COUCHDB_DATABASE}"
