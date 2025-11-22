@@ -10,11 +10,11 @@ RUN pip install cloudflare
 
 # Declare build-time variables (ARG)
 ARG EMAIL_CERTIFICATOR
-ARG CLOUDFLARE_API_KEY
+ARG CLOUDFLARE_API_TOKEN
 
 # Set environment variables for runtime (optional)
 ENV EMAIL_CERTIFICATOR=${EMAIL_CERTIFICATOR}
-ENV CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY}
+ENV CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
 
 # Copy the entrypoint script into the container
 COPY ./docker-entrypoint.sh $WORKDIR

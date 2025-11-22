@@ -3,7 +3,7 @@ set -e
 
 mkdir -p /etc/cloudflare && \
 echo "dns_cloudflare_email = $EMAIL_CERTIFICATOR" > /etc/cloudflare/cloudflare.ini && \
-echo "dns_cloudflare_api_key = $CLOUDFLARE_API_KEY" >> /etc/cloudflare/cloudflare.ini && \
+echo "dns_cloudflare_api_token = $CLOUDFLARE_API_TOKEN" >> /etc/cloudflare/cloudflare.ini && \
 chmod 600 /etc/cloudflare/cloudflare.ini
 
 set +e
