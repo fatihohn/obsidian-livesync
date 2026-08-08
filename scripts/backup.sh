@@ -85,6 +85,6 @@ BACKUP_FILE="$BACKUP_DIR/backup-$TIMESTAMP.txt.gz"
 echo "백업 시작: $DB_NAME -> $BACKUP_FILE"
 
 # couchbackup 실행
-"${COUCHBACKUP_CMD[@]}" --url "$DB_URL" --db "$DB_NAME" | gzip > "$BACKUP_FILE"
+"${COUCHBACKUP_CMD[@]}" --url "$DB_URL" --db "$DB_NAME" --buffer-size 50 | gzip > "$BACKUP_FILE"
 
 echo "백업 완료."

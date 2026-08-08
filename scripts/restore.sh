@@ -107,6 +107,6 @@ if ! curl -fs -X PUT "$DB_URL/$DB_NAME" > /dev/null; then
   exit 1
 fi
 # couchrestore 실행
-gunzip -c "$BACKUP_FILE" | "${COUCHRESTORE_CMD[@]}" --url "$DB_URL" --db "$DB_NAME"
+gunzip -c "$BACKUP_FILE" | "${COUCHRESTORE_CMD[@]}" --url "$DB_URL" --db "$DB_NAME" --buffer-size 50
 
 echo "복원 완료."

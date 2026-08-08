@@ -5,7 +5,7 @@ set -euo pipefail
 PROJECT_ROOT=$(dirname "$(realpath "$0")")/..
 
 BACKUP_DIR="$PROJECT_ROOT/backups"
-MAX_SIZE_GB=10
+MAX_SIZE_GB=100
 MAX_SIZE_BYTES=$((MAX_SIZE_GB * 1024 * 1024 * 1024))
 
 ENV_FILE="$PROJECT_ROOT/.env.backup"
@@ -67,17 +67,14 @@ else
 
     echo "원격 서버로 최신 백업 전송: ${REMOTE_TARGET}:${REMOTE_DIR}"
 
-    if ! ssh "$REMOTE_TARGET" "mkdir -p \"${REMOTE_DIR}\""; then
-      echo "오류: 원격 디렉터리 생성에 실패했습니다 (${REMOTE_TARGET}:${REMOTE_DIR})" >&2
-      exit 1
+    # NAS가 오프라인일 가능성을 대비하여 실패를 허용함
+    if ! ssh -o ConnectTimeout=10 "$REMOTE_TARGET" "mkdir -p \"${REMOTE_DIR}\""; then
+      echo "경고: 원격 서버 접속에 실패했습니다. NAS가 오프라인 상태일 수 있습니다. (${REMOTE_TARGET})" >&2
+    elif ! scp -o ConnectTimeout=10 "$LATEST_BACKUP" "${REMOTE_TARGET}:${REMOTE_DIR}/"; then
+      echo "경고: 원격 서버로 백업 파일 전송에 실패했습니다. (${REMOTE_TARGET})" >&2
+    else
+      echo "원격 서버 전송 완료."
     fi
-
-    if ! scp "$LATEST_BACKUP" "${REMOTE_TARGET}:${REMOTE_DIR}/"; then
-      echo "오류: 원격 서버로 백업 파일 전송에 실패했습니다 (${REMOTE_TARGET}:${REMOTE_DIR})" >&2
-      exit 1
-    fi
-
-    echo "원격 서버 전송 완료."
   else
     echo "원격 전송 설정이 비어 있어 로컬 백업만 유지합니다."
   fi
